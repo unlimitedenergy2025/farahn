@@ -1,3 +1,4 @@
+#dfkj
 <html lang="ar">
 <head>
     <meta charset="utf-8"/>
@@ -38,24 +39,6 @@
         <p>© 2023 فرحان - Chat GPT. جميع الحقوق محفوظة.</p>
     </footer>
     <script>
-        async function getChatGPTResponse(question) {
-            const apiKey = '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';
-            const response = await fetch('https://api.openai.com/v1/completions', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${apiKey}`
-                },
-                body: JSON.stringify({
-                    model: "text-davinci-003",
-                    prompt: question,
-                    max_tokens: 150
-                })
-            });
-            const data = await response.json();
-            return data.choices[0].text.trim();
-        }
-
         document.getElementById('send-button').addEventListener('click', async function() {
             const userInput = document.getElementById('user-input').value;
             if (userInput.trim() === '') return;
@@ -77,19 +60,40 @@
             document.getElementById('user-input').value = '';
 
             // Get AI response
-            const aiResponseText = await getChatGPTResponse(userInput);
+            try {
+                const response = await fetch('http://localhost:5000/api/chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ message: userInput })
+                });
 
-            // Append AI response
-            const aiResponse = document.createElement('div');
-            aiResponse.className = 'flex items-start space-x-4';
-            aiResponse.innerHTML = `
-                <img src="https://placehold.co/50x50" alt="صورة رمزية للذكاء الاصطناعي" class="w-12 h-12 rounded-full" />
-                <div class="bg-gray-200 p-4 rounded-lg">
-                    <p>${aiResponseText}</p>
-                </div>
-            `;
-            chatContainer.appendChild(aiResponse);
-            chatContainer.scrollTop = chatContainer.scrollHeight;
+                const data = await response.json();
+
+                // Append AI response
+                const aiResponse = document.createElement('div');
+                aiResponse.className = 'flex items-start space-x-4';
+                aiResponse.innerHTML = `
+                    <img src="https://placehold.co/50x50" alt="صورة رمزية للذكاء الاصطناعي" class="w-12 h-12 rounded-full" />
+                    <div class="bg-gray-200 p-4 rounded-lg">
+                        <p>${data.response}</p>
+                    </div>
+                `;
+                chatContainer.appendChild(aiResponse);
+                chatContainer.scrollTop = chatContainer.scrollHeight;
+            } catch (error) {
+                console.error('Error fetching the response:', error);
+                const errorMessage = document.createElement('div');
+                errorMessage.className = 'flex items-start space-x-4';
+                errorMessage.innerHTML = `
+                    <div class="bg-red-600 text-white p-4 rounded-lg">
+                        <p>حدث خطأ أثناء الحصول على الإجابة من الذكاء الاصطناعي.</p>
+                    </div>
+                `;
+                chatContainer.appendChild(errorMessage);
+                chatContainer.scrollTop = chatContainer.scrollHeight;
+            }
         });
     </script>
 </body>
